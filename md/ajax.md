@@ -40,7 +40,7 @@
 
      3.SEO不友好
 
-  -----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 
 #### 2、原生JS (依赖于XMLHttpResquest对象)
 
@@ -123,7 +123,7 @@
 
 --------------------------------------------------------------------------------------------------------------
 
-####  3、JQuery中的AJAX
+####  3、JQuery中的AJAX（导入JQuery包）
 
 - GET请求--1  $.get(url,[data],[callback],[type])
 
@@ -206,16 +206,96 @@
 
 ---------------------------------------------------------------------------------------------------------------------------
 
-####4、AXIOS的AJAX
+####4、AXIOS的AJAX（导入axios包）
 
-- 1
-- 2
-- 3
-- 4
-- 5
-- 6
-- 7
-- 8
+​       --- axios是一个基于promise的HTTP库,可以用在浏览器和node.js中。
+
+- 特性
+
+  - 从浏览器中创建 [XMLHttpRequests]
+  - 从 node.js 创建 [http](http://nodejs.org/api/http.html) 请求
+  - 支持 [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) API
+  - 拦截请求和响应
+  - 转换请求数据和响应数据
+  - 取消请求
+  - 自动转换 JSON 数据
+  - 客户端支持防御 [XSRF]
+
+- 使用（eg:为给定ID的user创建请求，返回的是promise对象）
+
+  - GET请求 -- 1
+
+    ```
+      //1--参数(查询字符串)拼接在url后面
+     axios.get('/user?ID=12345')
+        .then(function (response) {
+            console.log(response);
+            // response.data：返回的数据
+            // response.headers:响应头
+            // response.status：状态码
+            // response.statusText:状态信息
+           })
+         .catch(function (error) {
+              console.log(error);
+          }); 
+      //2--参数(查询字符串)写在外面,需要配置第二个属性params中
+       axios.get('/user', {
+                 params: {
+                       ID: 12345
+                   }})
+             .then(function (response) {
+                 console.log(response);
+              })
+             .catch(function (error) {
+                 console.log(error);
+              });
+    ```
+
+  - GET请求 -- 2
+
+    ```
+          axios({
+              method: 'get',
+              url: '/user',
+              params: {
+                  firstName: '111',
+                  lastName: '222'
+               }})
+              .then((data) => {
+                  console.log(data);
+              })
+    ```
+
+  - POST请求 -- 1
+
+    ```
+           axios.post('/user', {
+                        firstName: 'Fred',
+                        lastName: 'Flintstone'
+                    })
+                    .then(function (response) {
+                        console.log(response);
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+    ```
+
+  - POST请求 -- 2
+
+    ```
+        //post请求的参数写在data属性中
+           axios({
+                  method: 'post',
+                  url: '/user',
+                  data: {
+                     firstName: '111',
+                     lastName: '222'
+                   }})
+                  .then((data) => {
+                      console.log(data);
+                   })
+    ```
 
 -------------------------------------------------------------------------------------------------------------------------
 
@@ -242,7 +322,7 @@ D:最常见的应用场景就是项目开发中请求第三方其他域下的资
 
   - [实现原理]：
 
-     -- 通过`<script>`标签引入一个`js`文件，这个`js`文件载成功后会执行我们在`url`参数中指定的函数，并且会把我们需要的`json`数据作为参数传入。
+    -- 通过`<script>`标签引入一个`js`文件，这个`js`文件载成功后会执行我们在`url`参数中指定的函数，并且会把我们需要的`json`数据作为参数传入。
 
   - [实现方式]：需要前后端配合
 
@@ -382,3 +462,11 @@ D:最常见的应用场景就是项目开发中请求第三方其他域下的资
     #### 特点
 
        -- 不需要在客户端做任何特殊的操作，完全在服务器中进行处理，支持get和post请求。
+
+#### 6、网络模块的选择
+
+​     (1) 选择一 : 原生ajax。配置和调用非常的混乱,在开发中很少选择,而是使用jquery封装的ajax。
+
+​    (2) 选择二 : jquery封装的ajax。在开发vue项目的时候很少选择,因为我们开发vue项目是完全不依赖jquery的,所以为了使用jquery封装的ajax而去引用jquery得不偿失。
+
+​    (3) 选择三 : axios框架。也就是我们最终的选择。他有很多的优点,比如支持Promise, 支持拦截请求和响应。
