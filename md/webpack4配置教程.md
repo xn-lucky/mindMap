@@ -116,13 +116,13 @@
 * 备注1：在：eslint.org网站 -> userGuide -> Configuring ESLint 查看如何配置
 * 备注2：在：eslint.org网站 -> userGuide -> Rules 查看所有规则
 * 配置loader
-    ```
+    ```js
     module: {
       rules: [
         {
           test: /\.js$/,  //只检测js文件
           exclude: /node_modules/,  //排除node_modules文件夹
-          enforce: "pre",  //提前加载使用
+          enforce: "pre",  //提前加载使用 1. pre 优先处理 2. normal 正常处理（默认)3. inline 其次处理 4. post 最后处理
           use: { //使用eslint-loader解析
             loader: "eslint-loader" 
           }
@@ -175,7 +175,6 @@
             options: {
               presets: ['@babel/preset-env']
             }
-          }
         }
       ]
     }
@@ -232,13 +231,17 @@
 
 ### 9、打包样式文件中的图片资源
 * 概述：图片文件webpack不能解析，需要借助loader编译解析
+
 * 添加2张图片:
    * 小图, 小于8kb: src/images/vue.png
    * 大图, 大于8kb: src/images/react.jpg
+   
 * 在less文件中通过背景图的方式引入图片
+
 * 安装loader
   * npm install file-loader url-loader --save-dev 
   * 补充：url-loader是对象file-loader的上层封装，使用时需配合file-loader使用。**url-loader可以将图片转成base64**
+  
 * 配置loader
     ```
 	{
@@ -256,6 +259,30 @@
     ```
 
 * 运行指令：webpack
+
+
+
+#### Base64的优缺点: 
+
+```js
+1. 优点
+
+（1）base64格式的图片是文本格式，占用内存小，转换后的大小比例大概为1/3，降低了资源服务器的消耗；
+
+（2）网页中使用base64格式的图片时，不用再请求服务器调用图片资源，减少了服务器访问次数。
+
+2. 缺点
+
+（1）base64格式的文本内容较多，存储在数据库中增大了数据库服务器的压力；
+
+（2）网页加载图片虽然不用访问服务器了，但因为base64格式的内容太多，所以加载网页的速度会降低，可能会影响用户的体验。
+
+（3）base64无法缓存，要缓存只能缓存包含base64的文件，比如js或者css，这比直接缓存图片要差很多，而且一般HTML改动比较频繁，所以等同于得不到缓存效益。
+
+因为base64的使用缺点，所以一般图片小于10kb的时候，我们才会选择使用base64图片，比如一些表情图片，太大的图片转换成base64得不偿失。当然，极端情况极端考虑。
+```
+
+
 
 ### 10、打包html文件
 * 概述：html文件webpack不能解析，需要借助插件编译解析
@@ -342,7 +369,7 @@
 * 运行指令：webpack
 
 ### 13、自动编译打包运行
-* 安装loader
+* 安装包
 	
 	* npm install webpack-dev-server --save-dev
 	
@@ -371,7 +398,8 @@
      "webpack-dev-server": "^3.11.0"
     ```
 
-* 
+    
+    
 
 ### 14、热模替换功能
 * 概述：热模块替换（HMR）是webpack提供的最有用的功能之一。它允许在运行时更新所有类型的模块，而无需完全刷新（只更新变化的模块，不变的模块不更新）。
@@ -397,13 +425,11 @@
 	* cheap 只保留行, 编译速度快
 	* eval webpack生成的代码（每个模块彼此分开，并使用模块名称进行注释）, 编译速度快
 	* inline 以base64方式将source-map嵌入到代码中，缺点造成编译后代码体积很大
-* 推荐使用：
-	cheap-module-eval-source-map
 
 ```js
 // 注意: 跟entry,output,mode,module,plugins是同一级 
 devtool: 'cheap-module-eval-source-map' // 开发环境下
-devtool: 'cheap-module-source-map' // 开发环境下
+devtool: 'cheap-module-source-map' // 生产环境下
 ```
 
 
@@ -465,18 +491,7 @@ devtool: 'cheap-module-source-map' // 开发环境下
     * 第一步：`npm i serve -g ` 
     * 第二步：`serve -s dist -p 5000`
 
-
-### 17、清除打包文件目录
-* 概述：每次打包生成了文件，都需要手动删除，引入插件帮助我们自动删除上一次的文件
-* 安装插件
-	* npm install clean-webpack-plugin --save-dev
-* 引入插件(在webpack-prod.js中引入)
-  * const { CleanWebpackPlugin } = require('clean-webpack-plugin'); // 注意要解构赋值！！！
-* 配置插件
-  * new CleanWebpackPlugin() // 自动清除output.path目录下的文件
-* 运行指令：npm run build
-
-### 18、提取css成单独文件
+### 17、提取css成单独文件
 * 安装插件
 	
 	* npm install mini-css-extract-plugin --save-dev 
@@ -504,14 +519,15 @@ devtool: 'cheap-module-source-map' // 开发环境下
   * npm run build
   * serve -s build
 
-### 19、添加css兼容
+### 18、添加css兼容
 * 安装loader
 	
-	* npm install postcss-loader postcss-flexbugs-fixes postcss-preset-env  postcss-normalize autoprefixer --save-dev 
+	* npm install postcss-loader@3.0.0 postcss-flexbugs-fixes postcss-preset-env  postcss-normalize autoprefixer --save-dev 
 	* postcss-loader 解决css兼容问题.注意要使用@3.0.0版本的包
 	* postcss-flexbugs-fixes 处理程序员代码写的不对的代码,
 	* postcss-preset-env postcss执行时需要的环境
-	* postcss-normalize autoprefixer 给css样式自动添加前缀
+	* postcss-normalize 可以配置兼容的内核版本
+	* autoprefixer 给css样式自动添加前缀
 * 配置loader
   ```json
   {
@@ -553,7 +569,7 @@ devtool: 'cheap-module-source-map' // 开发环境下
   * npm run build
   * serve -s build
 
-### 20、压缩css
+### 19、压缩css
 * 安装插件
 	
 	* npm install optimize-css-assets-webpack-plugin --save-dev 
@@ -582,3 +598,18 @@ devtool: 'cheap-module-source-map' // 开发环境下
 
 
 
+entry: 入口     entry:{main: '路径'}
+
+output: 出口  output: {filename: path:}
+
+mode: 代码执行环境  development    production
+
+module: loaders   module: {rules: [{},{}]} 默认是从下往上执行/从右往左  loader只要下载,不需要引入
+
+plugins: 插件  plugins:[插件, 插件] 插件要下载,要自己引入
+
+
+
+devServer: 在开发环境下,帮我们开启一个服务器,自动编译刷新.  不会生成硬盘上dist. dist在内存
+
+devtool: 代码错误时,可以提示源码的错误行数
