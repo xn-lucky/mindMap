@@ -33,7 +33,7 @@ React 是一个用于构建用户界面的 JavaScript 库。
    ```html
    <!-- 提供react核心api-->
    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-   
+
    <!-- 提供了react中操作dom的api-->
    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
    ```
@@ -215,18 +215,17 @@ React 中的事件对象叫做：合成事件  (兼容所有浏览器，无需�
 
 - 需求：实现评论列表功能
 
--  如果有评论数据，就展示列表结构 li（ 列表渲染 ）要包含a标签
-  
+- 如果有评论数据，就展示列表结构 li（ 列表渲染 ）要包含a标签
+
   - name 表示评论人，渲染 h3
   - content 表示评论内容，渲染 p
-  
--  如果没有评论数据，就展示一个 h1 标签，内容为： 暂无评论！
 
--  根据自己的喜好添加样式
+- 如果没有评论数据，就展示一个 h1 标签，内容为： 暂无评论！
+
+- 根据自己的喜好添加样式
 
 - 给a标签注册点击事件, 打印内容
 
-  
 
 ```js
 const list = [
@@ -379,12 +378,11 @@ class Hello extends React.Component {
   // 连续调用.react会将多次合并成一次. 最终执行的是最后一次
   ```
 
-  
 
 - setState第一个参数传入函数
 
   ```javascript
-  
+
   state = {count:0}
   // 第一个参数除了可以像之前一样传入一个对象之外,还可以传入一个函数.如下
   // 这个函数,接收一个最新的state和最新的props
@@ -411,7 +409,7 @@ class Hello extends React.Component {
 
   ```javascript
   state = {count:0}
-  
+
   this.setState((state, props) => {
       return {
           count: state.count + 1
@@ -442,7 +440,6 @@ class Hello extends React.Component {
   )
   ```
 
-  
 
 ## 事件绑定this的指向问题
 
@@ -775,7 +772,6 @@ ref 的作用：获取 DOM 或组件
    <input type="text" ref={this.txtRef} />
    ```
 
-   
 
 3. 通过 ref 对象获取到文本框的值 
 
@@ -783,7 +779,6 @@ ref 的作用：获取 DOM 或组件
    Console.log(this.txtRef.current.value)
    ```
 
-   
 
 ## 案例- todo案例
 
@@ -939,7 +934,7 @@ export default class Demo extends Component {
   var token = PubSub.subscribe(TOPIC, function (msg, data) {
       console.log( msg, data );
   });
-  
+
   // 以异步的形式的发布一个话题 
   // TOPIC 通过这个话题,找到订阅这个话题的订阅者
   // 'hello world!' 具体要传递的数据
@@ -947,19 +942,18 @@ export default class Demo extends Component {
   // 发布的同步使用方法
   // 慎用!!!! 因为会阻塞发布者的代码执行
   PubSub.publishSync(TOPIC, 'hello world!');
-  
+
   // 取消指定的订阅
   PubSub.unsubscribe(token);
-  
+
   // 取消某个话题的所有订阅
   PubSub.unsubscribe(TOPIC);
-  
+
   // 取消所有订阅
   PubSub.clearAllSubscriptions();
-  
+
   ```
 
-  
 
 
 
@@ -1059,9 +1053,9 @@ function Hello(){
         )
       }
     }
-    
+
     // 不管子组件有没有用到父组件的数据,只要父组件重新渲染了,子组件就会跟着渲染
-    
+
     // 子组件
     class Son extends Component {
       //有效减少组件渲染次数
@@ -1082,7 +1076,6 @@ function Hello(){
     }
     ```
 
-    
 
 - 纯组件 pureComponet
 
@@ -1095,7 +1088,7 @@ function Hello(){
   - **注意: **纯组件内部的对比是 shallow compare（浅层对比）
 
     -  对于引用类型来说：只比较对象的引用（地址）是否相同 
-    - 所以,state 或 props 中属性值为引用类型时，应该创建新数据，不要直接修改原数据
+    -  所以,state 或 props 中属性值为引用类型时，应该创建新数据，不要直接修改原数据
 
     ```javascript
     class Far extends PureComponent {
@@ -1104,7 +1097,7 @@ function Hello(){
           num: 0
         }
       }
-    
+
       getRandomIntInclusive(min, max) {
         min = Math.ceil(min)
         max = Math.floor(max)
@@ -1127,7 +1120,7 @@ function Hello(){
           obj
         })
       }
-    
+
       render() {
         console.log('父组件渲染了')
         return (
@@ -1141,7 +1134,6 @@ function Hello(){
     }
     ```
 
-    
 
 ## React.forwardRef(不常用.可以通过props传递)
 
@@ -1252,13 +1244,13 @@ const EnhancedComponent = higherOrderComponent(WrappedComponent);
   3. 返回的也是一个组件,所以也要使用大驼峰命名法
   ```
 
-  
 
   2. 使用es7的修饰符
 
   ```javascript	
-  @higherOrderComponent
-  class WrappedComponent extends React.Component
+    @higherOrderComponent
+    class WrappedComponent extends React.Component
+  ```
   ```
 
 - **高阶组件要注意的问题:**
@@ -1277,7 +1269,7 @@ const EnhancedComponent = higherOrderComponent(WrappedComponent);
   //原理: 调试工具,优先展示组件的displayName
   ```
 
-  2. 传递props的问题
+    2. 传递props的问题
 
   <img src="./imgs/props传参.png">
 
@@ -1329,22 +1321,22 @@ class Position extends React.Component{
 2. 在这个组件上添加一个render属性. render属性的值是一个函数
 
       ```javascript
-<Position  render={()=>{}}/>
+      <Position  render={()=>{}}/>
       ```
 
 3. 把要真正渲染到页面的组件,当做箭头函数的返回值
 
      ```javascript
- <Position  render={()=><Cat />}/>
+      <Position  render={()=><Cat />}/>
      ```
 
 4. 这个组件render的函数可以接收组件中的状态数据
 
     ```javascript
- <Position  render={ pos =><Cat {...pos}/>}/>
+     <Position  render={ pos =><Cat {...pos}/>}/>
     ```
 
- 	5. 在Position中通过this.props.render()得到真正要渲染的组件
+      5. 在Position中通过this.props.render()得到真正要渲染的组件
 
 ```javascript
 //Position组件
@@ -1377,7 +1369,7 @@ render() {
 
 - 组件复用状态逻辑比较难 (HOC和render props 写起来比较麻烦),Hook 使你在无需修改组件结构的情况下复用状态逻辑
 
--  解决了this难以理解的问题
+- 解决了this难以理解的问题
 - 希望可以逐渐取代class
 
 ### useState()基本使用

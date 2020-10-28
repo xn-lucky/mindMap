@@ -724,7 +724,7 @@
 
        - 卸载阶段（componentDidUnMount）
 
-         - componentDidUnMount : 组件卸载(从页面上消失,就是页面上没有这个组件,跟display和visitibled不一样),执行
+         - componentDidUnMount : 组件卸载(从页面上消失,就是页面上没有这个组件,跟display和visitibled不一样),执行(清除操作-->清除定时器,取消订阅)
 
 
 - ####组件通讯
@@ -742,14 +742,14 @@
       APP.js,Far.js,Son.js,APP要给Son传递数据（加入这三个文件在一个目录）
       //1、创建context对象解构出Provider(提供数据),Consumer(消费数据)两个组件
       //但是因为APP传数据用到Provider,Son接收数据用到Consumer,是在不同的页面，但是两个页面用到的context对象要是一个,所以需要另外创建context.js来写创建context对象的代码
-
+      ---------------------------------------------------------------------
       context.js
         import React from 'react'
         export default React.createContext()
       //注意的是：创建context对象的时候可以写默认值,如下
        //React.createContext('默认值') 
       // 注意: 默认值是在没有提供provider的时候生效,而不是没有写value的时候生效 
-
+      ---------------------------------------------------------------------
       App.js
         import React from 'react'
         import Son from './son'
@@ -767,7 +767,7 @@
               )    
           }
        }
-       
+       ---------------------------------------------------------------------
         Son.js
           import React from 'react'
           import context from './context'//获取创建的context对象
@@ -857,7 +857,8 @@
 
 - #### Fragment（包裹结构,但不会渲染根标签）
 
-       -- react组件中只能有一个根组件,之前使用div包裹的方式会给html结构增加很多无用的层级,为了解决这个问题,可以使用React.Fragment
+   -- react组件中只能有一个根组件,之前使用div包裹的方式会给html结构增加很多无用的层级,为了解决这个问题,可以使用React.Fragment
+
 
      ```js
      //以前的页面
@@ -898,22 +899,423 @@
 
      - 方式一(减轻state)
        - 减轻state. 跟视图渲染无关的数据,不要写在state里面, 可以直接加到this(组件实例)上面(比如定时器的id),**可以减少页面重新渲染次数** 
-     - 方式二(shouldComponentUpdate -- 减轻不必要的重新渲染)
+
+     - 方式二(shouldComponentUpdate -- 减轻不必要的重新渲染)(**只有在更新阶段才会调用**) 
+
+       - **组件的更新机制** : 父组件重新渲染时,也会重新渲染子组件
+
+       - **问题 : 为了避免不必要的重新渲染** --->**解决方式** :   使用钩子函数  shouldComponentUpdate(nextProps, nextState) , 可以通过这个钩子函数的返回值决定是否重新渲染,返回true表示重新渲染,false表示不重新渲染。
+
+       - 钩子函数的**触发时机**: 更新阶段的钩子函数，组件重新渲染前执行 （shouldComponentUpdate => render） 
+
+         ```js
+         //直接在组件中写shouldComponentUpdate函数
+         import React, { Component } from 'react'
+         export default class Son extends Component {
+         //此钩子函数只有在props或者state更新时才会被触发
+         //钩子函数有两个参数，第一个参数是最新的props,第二个参数是最新的state
+         shouldComponentUpdate(nextProps,nextState){
+            state = {
+             msg: 'xxx',
+              //我们在修改数据时,不要在原先的基础上去改,尤其是基本数据类型以外的值
+             obj: {
+               name: 'zs'
+             }
+           }
+           //在这边比较props或者state是否有变化
+           //对比了props和state中的每条数据是否有变化，其中有一条变化都返回true
+           if (nextProps.count !== this.props.count ||
+                  nextState.msg !== this.state.msg) {
+                  return true //返回true后，会继续执行render
+                }
+               return false//返回false，不会向下执行render
+           }
+           
+            render() {
+             console.log('son组件更新了')
+             return (
+               <>
+                 <h1>{this.state.obj.name}</h1>
+                 <div>Son组件,{this.props.count}</div>
+                 <div>{this.state.msg}</div>
+               </>
+             )
+           }
+           
+           
+         }
+         ```
+
+       - **钩子函数(shouldComponentUpdate)有个缺点**：如果props和state中有很多的数据,就要在函数中挨个判断,会比较麻烦。**解决方式**-->使用纯组件(PureComponent).纯组件内部实现了shouldComponentUpdate ,我们直接使用纯组件就可以,省去了使用钩子函数也不需要挨个判断。
+
      - 方式三(pureComponet -- 纯组件)
 
-- 2
+       - PureComponent 与 React.Component功能是类似的,可以直接替换(就是原先我们创建的组件都是继承的React.Component,现在直接继承PureComponent即可)
 
-- 3
+         - **PureComponent 与 React.Component区别**： PureComponent 内部自动实现了 shouldComponentUpdate 钩子，不需要手动比较 
 
-- 4
+       - **PureComponent 原理**: 纯组件内部通过分别 对比 前后两次 props 和 state 的值，来决定是否重新渲染组件 
 
-- 5
+       - **值得注意的是**: 纯组件内部的对比是 shallow compare（浅层对比）,如果比较基本数据类型,比较的是值。如果比较复杂数据类型,比较的是地址值。**所以**, state 或 props 中属性值为引用类型时，应该创建新数据，不要直接修改原数据(基本类型时也尽量不要修改原数据)
 
-- 6
+         ```js
+         import React, { Component, PureComponent } from 'react'
 
-- 7
+         // 纯组件的功能和component的功能几乎是一样,但是,纯组件将shouldComponentUpdate增强了,自动判断当前的props和state的值是否发生了变化
+         // 注意: 纯组件,在底层对比state和props的时候,使用的是浅层对比
+         // 如果比较基本数据类型,比较的是值
+         // 如果比较复杂数据类型,比较的是地址值
+         export default class Son extends PureComponent {
+           state = {
+             msg: 'xxx',
+             obj: {
+               name: 'zs'
+             }
+           }
+           render() {
+             console.log('son组件更新了')
+             return (
+               <>
+                 <h1>{this.state.obj.name}</h1>
+                 <div>Son组件,{this.props.count}</div>
+                 <div>{this.state.msg}</div>
+               </>
+             )
+           }
+         }
+         ```
 
-- 8
+- ####提供复用代码的逻辑
+
+     - ####高阶组件(HOC higherOrderComponent)
+
+       -- 高阶组件（HOC）是 React 中用于复用组件逻辑的一种**高级技巧**。HOC 自身不是 React API 的一部分，它是一种**基于 React 的组合特性而形成的设计模式** (**简单理解的话:** 一个拥有复用逻辑的函数,这个函数需要传入一个组件,然后返回一个增强的组件,并渲染这个增强组件)
+
+       - 具体实现
+
+         ```js
+         //案例说明:登录注册页面(有相同的逻辑，获取用户名和密码的值)
+         -----------------------------------------------------------------
+         //复用逻辑的js，是一个函数,接收参数,并返回一个组件(组件中渲染的是传进来参数对应的组件)
+         withForm.js
+         import React from 'react'
+         //返回一个函数，参数就是传进来接收数据的组件
+         export default function withForm(WrappedComponent){
+             //返回一个组件，名字不重要，可以忽略，调用函数时，用变量接收，变量就是返回的组件
+             return class extends React.Component{
+                 //在这边写传进来的组件公有的属性和方法
+                 /* 
+                    高阶组件问题2：使用了react-dev-tool插件后，可以在浏览器调试页面看到对应信息，但是由于返回的组件没有设置组件名所以调试页面看到的都是_temp,但是如果设置为Demo，那么看到的就全都是Demo,若使用高阶组件比较多，嵌套的也比较多的时候，找组件很麻烦（要见名知意）,可以给每个使用高阶组件设置不同的名字
+                 */
+                //解决问题2:--->在静态属性上设置displayName,WrappedComponent.name可以获取组件的名字
+                static displayName = 'with'+WrappedComponent.name
+
+           //state和handleChange是复用,公有的
+                 state ={
+                     username:'',
+                     password:''
+                 }
+                 handleChange = name => e => {
+                       this.setState({
+                         [name]: e.target.value
+                       })
+                     }
+                   
+                 render(){
+                     /* 高阶组件问题1：若App想给login传递数据,要通过withLogin(因为App->withLogin->Login,App与Login是爷孙关系)
+                         解决-->  在withLogin组件中给Login传递数据，但是如果数据比较多的时候会比较麻烦,所以可以像state一样进行解构传值*/
+                     return (
+                     <WrappedComponent handleChange={this.handleChange} {...this.state} {...this.props} ></WrappedComponent>)
+                 }
+             }
+         }
+                       
+         ---------------------------------------------------------------------              
+         APP.js
+         import React, { Component } from 'react'
+         import Login from './pages/Login'
+         import Register from './pages/Register'
+
+         import withForm from './withForm'
+
+         //调用withForm,将组件传进去,返回一个新的组件WithLogin/WithRegister
+         const WithLogin = withForm(Login)
+         const WithRegister = withForm(Register)
+
+         export default class App extends Component {
+           
+           render() {
+             return (
+               <div><h1>高阶组件</h1>
+                 {/* <Login></Login> */}
+               //在需要使用Login的地方,调用返回的组件，返回的组件里面渲染的就是你传进去的那个组件(看上面的withForm.jsrender中return的)
+                 <WithLogin test={'app传给login的值'}/>
+                 <WithRegister/>
+               </div>
+             )
+           }
+         }
+
+         ---------------------------------------------------------------------
+         //登录注册组件
+         Login.js
+         import React, { Component } from 'react'
+         export default class Login extends Component {
+           render() {
+             const {username,password,handleChange} = this.props
+             console.log(this.props)
+             return (    
+               <div>
+                 <br/>
+                 <h1>登录</h1>
+                 <form>
+                   用户名:
+                   <input type='text' value={username}
+                     onChange={handleChange('username')}/>
+                   <br />
+                   密码:
+                   <input type='password' value={password}
+                     onChange={handleChange('password')} />
+                   <br />
+                   <input type='button' value='登录' />
+                 </form>
+               </div>
+             )
+           }
+         }
+         ---------------------------------------------------------------------
+         Register.js
+         import React, { Component } from 'react'
+         export default class Register extends Component {
+           render() {
+             const {username,password,repassword,handleChange} = this.props
+             return (
+               <div>
+                 <br/>
+                 <h1>注册</h1>
+                 <form>
+                   用户名:
+                   <input type='text' value={username}
+                     onChange={handleChange('username')}/>
+                   <br />
+                   密码:
+                   <input type='password' value={password}
+                     onChange={handleChange('password')} />
+                    <br />
+                   确认密码:
+                   <input type='password' value={repassword}
+                     onChange={handleChange('repassword')}/>
+                   <br />
+                   <input type='button' value='登录' />
+                 </form>
+               </div>
+             )
+           }
+         }
+         ```
+
+       - **高阶组件有两个问题**, 问题和解决方法看上面具体实现中的withForm.js中有写到。
+
+     - ####render props
+
+       -- render props ---> 将复用的状态和逻辑代码封装到一个组件中 。
+
+       - 具体实现
+
+         ```js
+         //案例说明：猫捉老鼠
+
+              //1、定义一个组件Position,来写公有的代码
+         Position.js
+              import React,{Component} from 'react'
+              export default class Position extends Component{
+                //公有状态
+                 state = {
+                     x:'',
+                     y:''
+                   }
+                //公有方法
+                 handle = (e)=>{
+                   //设置鼠标的位置
+                   this.setState({
+                     x:e.clientX,
+                     y:e.clientY
+                   })
+                 }
+                 //在创建完成阶段绑定事件
+                 componentDidMount(){
+                   window.addEventListener('mousemove',this.handle)
+                 }
+                 //在卸载阶段清除事件
+                 componentWillUnmount(){
+                    window.removeEventListener('mousemove',this.handle)
+                 }
+              //渲染阶段，返回结构
+                render(){
+                    //方法一
+                    return this.props.render(this.state)
+                    //方法二 通过this.props.children可以获取到组件中的子节点，这里子节点为函数
+                    return this.props.children(this.state)
+                }
+
+              }
+
+         ----------------------------------------------------------------
+         App.js
+
+              import React, { Component } from 'react'
+              import Cat from './components/Cat'
+              import Mouse from './components/Mouse'
+
+              import Position from './Position'
+
+              export default class App extends Component {
+                render() {
+                  return (
+                    <div>
+                      <h1>猫捉老鼠</h1>
+                    {/* 使用第一种写法 render是一个函数,把真正要渲染的组件当作这个函数的返回值，Position组件调用render时传入了状态数据,返回值(真正要渲染的组件)接收了这个状态数据 */}
+                    {/* <Position render={state=><Mouse state={state}></Mouse>}></Position>
+                    <Position render={state=><Cat state={state}></Cat>}></Position> */}
+                     {/* 使用第二种写法  类似consumer,组件Position获取到子节点(函数)，调用的时传入了状态数据,返回值(真正要渲染的组件)接收了状态数据 */}
+                  <Position>{state=><Mouse state={state}></Mouse>}</Position>
+                  <Position>{state=><Cat state={state}></Cat>}</Position>
+                    </div>
+                  )
+                }
+              }
+
+         ----------------------------------------------------------------  
+         //猫和老鼠的代码
+          Cat.js
+
+              import React, { Component } from 'react'
+              import CatUrl from '../assets/cat.gif'
+
+              export default class Cat extends Component {
+                render() {
+                  let { x, y } = this.props.state
+                  x += 200
+                  y -= 50
+                  return (
+                    <div>
+                      <img src={CatUrl} alt='' style={{ position: 'absolute', left: x, top: y }} />
+                    </div>
+                  )
+                }
+              }
+         ----------------------------------------------------------------------
+          Mouse.js
+
+              import React, { Component } from 'react'
+              import MouseUrl from '../assets/mouse.gif'
+
+              export default class Mouse extends Component {
+                render() {
+                  let { x, y } = this.props.state
+                  return (
+                    <div>
+                      <img src={MouseUrl} alt='' style={{ position: 'absolute', left: x, top: y, width: 100 }}/>
+                    </div>
+                  )
+                }
+              }
+         ```
+
+
+- ####Hooks（钩子,本质是函数）
+
+     - **作用** :本质就是函数,可以**定义状态和生命周期钩子函数**。
+
+     - **Hook出现原因**: 因为组件复用状态逻辑比较难,写起来也比较麻烦,Hook可以在无需修改组件的情况下复用状态逻辑。因为函数中没有this,所以**也解决了this指向的问题**
+
+     - Hook/React开发团队的梦想:在未来逐渐取代class
+
+     - **常用的Hooks**
+
+       - userState()（在函数组件中定义状态）
+
+         - 使用方法
+
+           (1)导入（import React ,{userState} from 'react'）
+
+           (2)使用 （const [状态的属性,操作状态属性的方法] = useState(属性默认值)）
+
+           ```js
+           //useState使用的代码演示(可以使用多次)
+
+           import React ,{userState} from 'react'
+           export default function Header(){
+             //定义状态,state中有一个属性count默认值为0,若想修改count的值,可以调用setCount(传进来要给count赋值的数据)
+             const [count,setCount] = useState(0)
+             //若state中有多个属性，那就继续接着写即可
+             const [msg,setMsg] = userState('默认值')
+             
+             return 
+                (<div>
+                   <div>{count}</div>
+                   <button onClick={()=>{
+                       //直接调用,修改count的值为count+1
+                       setCount(count+1)
+                    }}>按钮</button>
+                 </div>)
+           }
+           ```
+
+           ​
+
+       - userEffect()（在函数组件中模拟生命周期钩子函数）
+
+         - 使用方法
+
+           (1)导入（import React ,{userEffect} from 'react'）
+
+           (2) 使用 useEffect(()=>{},[])
+
+           ```js
+           //useEffect使用的代码演示
+           import React ,{userEffect} from 'react'
+           export default function Header(){
+             //定义状态
+             const [count,setCount] = useState(0)
+             
+             //模拟生命周期钩子函数
+             useEffect(()=>{
+               //没有传第二个参数的时候,这边相当于componentDidMount和componentDidUpdate
+               return ()=>{
+                 // 相当于componentWillUnmount,完成清除操作
+               }
+             },[count,props.msg])
+             /*解析:userEffect函数调用时
+              1、若只有一个参数(回调函数),这个第一个参数中的回调函数在创建完成和更新阶段都会调用(相当于componentDidMount和componentDidUpdate)
+              2、第一个参数回调函数有一个返回值，也是一个回调函数,这个回调函数在组件销毁的时候会调用(相当于componentWillUnmount)
+              3、若useEffect传入第二个参数为一个空数组时,则useEffect只相当于componentDidMount,更新阶段就不会执行
+              4、若useEffect传入第二个参数为数组(不是空数组),数组中可以传入state或props数据,传入数组的数据就是被监听的数据,只要这些数据中有一个值发生变化,第一个参数的回调函数才会重新执行(执行之前会先执行卸载)*/
+             
+               return 
+                (<div>
+                   <div>{count}</div>
+                   <button onClick={()=>{
+                       //直接调用,修改count的值为count+1
+                       setCount(count+1)
+                    }}>按钮</button>
+                 </div>)
+           }
+           ```
+
+     - **Hooks使用的规则**（不管是react提供的hooks,还是第三方的hooks,还是自定义的hooks. 都遵守下面的规则） 
+
+         (1) hooks只能在函数组件和自定义hooks中使用。
+
+         (2) 在函数组件和自定义hooks中使用其他hooks的时候,要求写在顶级作用域,千万不要写在if/循环/嵌套的普通函数中
+
+     - **自定义Hooks函数** (就是以useXXX命名的普通函数,在这个函数中实现定义状态和模拟生命周期)
+
+- ​
+
+- ​
+
+- ​
 
 - ### 脚手架初始化项目
 
