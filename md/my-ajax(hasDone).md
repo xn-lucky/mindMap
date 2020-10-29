@@ -52,7 +52,8 @@
   var xhr = new XMLHttpRequest();
   ```
 
-     2、打开路径,建立连接:使用`XMLHttpRequest`对象的`open` 方法
+​       2、打开路径,建立连接:使用`XMLHttpRequest`对象的`open` 方法
+
 
   ```
   xhr.open('GET','/userinfo?userID=${oUser.value}');
@@ -61,16 +62,18 @@
   //如果当前静态文件和请求的资源在同一个服务器下（比如都在http://127.0.0.1）,那么可以直接书写请求接口路径
   ```
 
-     3、发送请求：使用`XMLHttpRequest`对象的`send` 方法
+​      3、发送请求：使用`XMLHttpRequest`对象的`send` 方法
+
 
   ```
   xhr.send();
   //get请求，请求体在查询字符串中,所以send中不需要书写参数
   ```
 
-     4、接收响应: 若ajax请求状态发生变化,会自动触发onreadystatechange事件
+​     4、接收响应: 若ajax请求状态发生变化,会自动触发onreadystatechange事件
 
-  ```
+
+  ```js
   xhr.onreadystatechange = function(){
       /*
          响应数据的接收:
@@ -125,7 +128,7 @@
 
 ####  3、JQuery中的AJAX（导入JQuery包）
 
-- GET请求--1  $.get(url,[data],[callback],[type])
+- GET请求--1  
 
   ```
    /*   //使用jquery的ajax的get的请求
@@ -149,7 +152,7 @@
          }) */
   ```
 
-- GET请求--2  
+- GET请求--2  $.get(url,[data],[callback],[type])
 
   ```
    //jquery还封装了另外的get方法和post方法,进行ajax请求
@@ -467,6 +470,6 @@ D:最常见的应用场景就是项目开发中请求第三方其他域下的资
 
 ​     (1) 选择一 : 原生ajax。配置和调用非常的混乱,在开发中很少选择,而是使用jquery封装的ajax。
 
-​    (2) 选择二 : jquery封装的ajax。在开发vue项目的时候很少选择,因为我们开发vue项目是完全不依赖jquery的,所以为了使用jquery封装的ajax而去引用jquery得不偿失。
+​     (2) 选择二 : jquery封装的ajax。在开发vue项目的时候很少选择,因为我们开发vue项目是完全不依赖jquery的,所以为了使用jquery封装的ajax而去引用jquery得不偿失。
 
-​    (3) 选择三 : axios框架。也就是我们最终的选择。他有很多的优点,比如支持Promise, 支持拦截请求和响应。
+​     (3) 选择三 : axios框架。也就是我们最终的选择。他有很多的优点,比如支持Promise, 支持拦截请求和响应。
